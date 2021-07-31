@@ -9625,9 +9625,20 @@ Shiny.addCustomMessageHandler("shinyToastify", function (message) {
     jscallback = eval("() => {".concat(decodeURI(message.JScallback), "}"));
   }
 
+  var f = function f() {};
+
+  if (message.config.hasOwnProperty("toastId")) {
+    f = function f() {
+      Shiny.setInputValue(message.config.toastId + "_closed", true, {
+        priority: "event"
+      });
+    };
+  }
+
   message.config = $.extend(message.config, {
     onClose: function onClose() {
       jscallback();
+      f();
       Shiny.setInputValue("shinyToastifyOnClose", true);
       setTimeout(function () {
         Shiny.setInputValue("shinyToastifyOnClose", null);
@@ -9635,6 +9646,44 @@ Shiny.addCustomMessageHandler("shinyToastify", function (message) {
     }
   });
   toaster(message.text, message.config);
+});
+Shiny.addCustomMessageHandler("shinyToastifyUpdate", function (message) {
+  if (isHTML(message.config.render)) {
+    message.config.render = /*#__PURE__*/React.createElement(HtmlComponent, {
+      html: message.config.render.__html
+    });
+  }
+
+  switch (message.config.transition) {
+    case "slide":
+      message.config.transition = react_toastify__WEBPACK_IMPORTED_MODULE_1__["Slide"];
+      break;
+
+    case "zoom":
+      message.config.transition = react_toastify__WEBPACK_IMPORTED_MODULE_1__["Zoom"];
+      break;
+
+    case "flip":
+      message.config.transition = react_toastify__WEBPACK_IMPORTED_MODULE_1__["Flip"];
+      break;
+
+    case "bounce":
+      message.config.transition = react_toastify__WEBPACK_IMPORTED_MODULE_1__["Bounce"];
+      break;
+  }
+
+  var jscallback = function jscallback() {};
+
+  if (message.JScallback !== null) {
+    jscallback = eval("() => {".concat(decodeURI(message.JScallback), "}"));
+  }
+
+  message.config = $.extend(message.config, {
+    onClose: function onClose() {
+      jscallback();
+    }
+  });
+  react_toastify__WEBPACK_IMPORTED_MODULE_1__["toast"].update(message.toastId, message.config);
 });
 
 var Toaster = function Toaster(_ref2) {
